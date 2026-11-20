@@ -1,0 +1,10 @@
+<library path="waiko_controller">
+  <class
+    name="waiko_ros2_control/WaikoController"
+    type="waiko_ros2_control::WaikoController"
+    base_class_type="controller_interface::ControllerInterface">
+    <description>
+      Estimates the pose and velocity of the IMU with WAIKO from the IMU and contact kinematics state interfaces.
+    </description>
+  </class>
+</library>

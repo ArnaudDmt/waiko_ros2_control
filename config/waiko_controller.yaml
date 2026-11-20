@@ -1,0 +1,18 @@
+# Example configuration of the controller in a controller_manager parameter file. Every parameter
+# is listed in src/waiko_controller_parameters.yaml and src/waiko_estimator_parameters.yaml.
+controller_manager:
+  ros__parameters:
+    update_rate: 200  # Hz
+
+    waiko_controller:
+      type: waiko_ros2_control/WaikoController
+
+waiko_controller:
+  ros__parameters:
+    imu_name: imu
+    contacts: [left_foot, right_foot]
+    world_frame_id: world
+    imu_frame_id: imu_link
+    initial_imu_position: [0.0, 0.0, 0.0]
+    initial_imu_orientation: [0.0, 0.0, 0.0, 1.0]
+    reset_position_anchor_on_contact_change: true

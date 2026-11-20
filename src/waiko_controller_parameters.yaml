@@ -1,0 +1,39 @@
+waiko_controller:
+  imu_name:
+    type: string
+    default_value: ""
+    description: "Name of the IMU sensor. The controller claims the state interfaces <imu_name>/angular_velocity.{x,y,z} and <imu_name>/linear_acceleration.{x,y,z}."
+    read_only: true
+    validation:
+      not_empty<>: null
+  contacts:
+    type: string_array
+    default_value: []
+    description: "Names of the contacts of the robot. For each contact, the controller claims the state interfaces <contact>/active (non-zero when set), <contact>/lambda, <contact>/position.{x,y,z}, <contact>/orientation.{x,y,z,w} and <contact>/linear_velocity.{x,y,z}, all expressed in the IMU frame."
+    read_only: true
+    validation:
+      unique<>: null
+  world_frame_id:
+    type: string
+    default_value: "world"
+    description: "Frame of the estimated pose."
+    validation:
+      not_empty<>: null
+  imu_frame_id:
+    type: string
+    default_value: "imu_link"
+    description: "Frame of the IMU, child frame of the published odometry."
+    validation:
+      not_empty<>: null
+  initial_imu_position:
+    type: double_array
+    default_value: [0.0, 0.0, 0.0]
+    description: "Position of the IMU in the world when the controller is activated."
+    validation:
+      fixed_size<>: [3]
+  initial_imu_orientation:
+    type: double_array
+    default_value: [0.0, 0.0, 0.0, 1.0]
+    description: "Orientation of the IMU in the world when the controller is activated, as a quaternion [x, y, z, w]."
+    validation:
+      fixed_size<>: [4]

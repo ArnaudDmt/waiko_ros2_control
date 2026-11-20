@@ -1,0 +1,123 @@
+waiko_estimator:
+  initial_gains:
+    alpha:
+      type: double
+      default_value: 4.0
+      description: "Correction of the local linear velocity x1 by the kinematic velocity measurement. Used before gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    beta:
+      type: double
+      default_value: 4.0
+      description: "Correction of the tilt x2 by the kinematic velocity measurement. Used before gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    gamma:
+      type: double
+      default_value: 1.0
+      description: "Convergence of the tilt of the orientation towards x2. Used before gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    rho:
+      type: double
+      default_value: 2.0
+      description: "Correction of the position by the contact positions. Used before gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    mu:
+      type: double
+      default_value: 1.0
+      description: "Correction of the yaw by the contact orientations. Used before gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    psi:
+      type: double
+      default_value: 0.3
+      description: "Correction of the yaw by the contact positions, used with with_ori_correct_from_contact_pos. Used before gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+  final_gains:
+    alpha:
+      type: double
+      default_value: 4.0
+      description: "Correction of the local linear velocity x1 by the kinematic velocity measurement. Used after gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    beta:
+      type: double
+      default_value: 4.0
+      description: "Correction of the tilt x2 by the kinematic velocity measurement. Used after gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    gamma:
+      type: double
+      default_value: 1.0
+      description: "Convergence of the tilt of the orientation towards x2. Used after gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    rho:
+      type: double
+      default_value: 1.0
+      description: "Correction of the position by the contact positions. Used after gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    mu:
+      type: double
+      default_value: 1.0
+      description: "Correction of the yaw by the contact orientations. Used after gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+    psi:
+      type: double
+      default_value: 0.3
+      description: "Correction of the yaw by the contact positions, used with with_ori_correct_from_contact_pos. Used after gain_switch_time."
+      validation:
+        gt_eq<>: [0.0]
+  gain_switch_time:
+    type: double
+    default_value: 1.0
+    description: "Time after the initialization (s) from which the final gains replace the initial ones."
+    validation:
+      gt_eq<>: [0.0]
+  no_contact_gains:
+    alpha:
+      type: double
+      default_value: 30.0
+      description: "alpha used when no contact is set; the kinematic velocity measurement is then zero."
+      validation:
+        gt_eq<>: [0.0]
+    beta:
+      type: double
+      default_value: 0.0
+      description: "beta used when no contact is set; zero keeps the tilt from being corrected by that measurement."
+      validation:
+        gt_eq<>: [0.0]
+  with_ori_correct_from_contact_ori:
+    type: bool
+    default_value: true
+    description: "Correct the yaw with the IMU orientation given by the contact orientations (gain mu)."
+  with_ori_correct_from_contact_pos:
+    type: bool
+    default_value: false
+    description: "Correct the yaw with the contact positions (gain psi)."
+  leg_odometry:
+    correct_contacts:
+      type: bool
+      default_value: true
+      description: "Slowly correct the world references of the contacts towards their current estimate."
+    kappa:
+      type: double
+      default_value: 10.0
+      description: "Decay rate (1/s) of the weight of the contact reference correction with the contact lifetime."
+      validation:
+        gt_eq<>: [0.0]
+    lambda_inf:
+      type: double
+      default_value: 0.001
+      description: "Asymptotic weight of the contact reference correction."
+      validation:
+        bounds<>: [0.0, 1.0]
+  reset_position_anchor_on_contact_change:
+    type: bool
+    default_value: false
+    description: "Move the origin of the local position to the centroid of the contact references each time the set of contacts changes. The world position stays continuous."

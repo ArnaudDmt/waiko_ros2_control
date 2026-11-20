@@ -1,0 +1,4 @@
+test_waiko_controller:
+  ros__parameters:
+    imu_name: imu
+    contacts: [left_foot, right_foot]

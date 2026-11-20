@@ -1,0 +1,21 @@
+# Parameters of waiko_estimator_node; every estimator parameter is listed in
+# src/waiko_estimator_parameters.yaml.
+waiko_estimator:
+  ros__parameters:
+    dt: 0.005
+    gain_switch_time: 1.0
+    initial_gains:
+      alpha: 4.0
+      beta: 4.0
+      gamma: 1.0
+      rho: 2.0
+      mu: 1.0
+      psi: 0.3
+    final_gains:
+      alpha: 4.0
+      beta: 4.0
+      gamma: 1.0
+      rho: 1.0
+      mu: 1.0
+      psi: 0.3
+    reset_position_anchor_on_contact_change: false
