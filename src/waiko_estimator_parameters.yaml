@@ -119,5 +119,5 @@ waiko_estimator:
         bounds<>: [0.0, 1.0]
   reset_position_anchor_on_contact_change:
     type: bool
-    default_value: false
+    default_value: true
     description: "Move the origin of the local position to the centroid of the contact references each time the set of contacts changes. The world position stays continuous."
