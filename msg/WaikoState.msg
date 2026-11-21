@@ -3,9 +3,8 @@
 # Stamp of the input sample; frame_id is the world frame.
 std_msgs/Header header
 
-# Contacts that were already set before this sample and were used for the correction.
-bool contacts_active
-uint32 active_contacts_count
+# Number of contacts already set before this sample, which were used for the correction.
+uint32 maintained_contacts_count
 
 # Kinematic measurement of the local linear velocity of the IMU, yv = -w x p_anchor - v_anchor (IMU frame).
 geometry_msgs/Vector3 computed_yv

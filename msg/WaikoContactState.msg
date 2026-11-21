@@ -1,7 +1,5 @@
 # Contact currently tracked by the leg odometry.
 string name
-# Always true: only the contacts in place are reported.
-bool active
 float64 contact_lambda
 # Reference pose of the contact in the world.
 geometry_msgs/Point world_ref_position

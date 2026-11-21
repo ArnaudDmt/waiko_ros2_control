@@ -37,8 +37,7 @@ WaikoConfiguration make_configuration(const waiko_estimator::Params & params)
 
 void to_message(const WaikoEstimate & estimate, msg::WaikoState & message)
 {
-  message.contacts_active = estimate.maintained_contacts_count > 0;
-  message.active_contacts_count = static_cast<uint32_t>(estimate.maintained_contacts_count);
+  message.maintained_contacts_count = static_cast<uint32_t>(estimate.maintained_contacts_count);
   tf2::toMsg(estimate.kinematic_velocity, message.computed_yv);
   tf2::toMsg(estimate.local_linear_velocity, message.x1);
   tf2::toMsg(estimate.tilt, message.x2);
@@ -58,7 +57,6 @@ void to_message(const WaikoEstimate & estimate, msg::WaikoState & message)
     const ContactState & contact = estimate.contacts[i];
     msg::WaikoContactState & contact_message = message.contacts[i];
     contact_message.name = contact.name;
-    contact_message.active = true;
     contact_message.contact_lambda = contact.lambda;
     contact_message.world_ref_position = tf2::toMsg(contact.world_ref_position);
     contact_message.world_ref_orientation = tf2::toMsg(contact.world_ref_orientation);

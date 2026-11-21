@@ -103,12 +103,16 @@ void WaikoEstimator::update(
 
 bool WaikoEstimator::update_contacts(const std::vector<ContactMeasurement> & contacts)
 {
-  active_contacts_.clear();
+  // Updated in place, so that it allocates only when the set of contacts changes.
   for (const ContactMeasurement & contact : contacts)
   {
     if (contact.active)
     {
       active_contacts_.insert(contact.name);
+    }
+    else
+    {
+      active_contacts_.erase(contact.name);
     }
   }
 
@@ -195,19 +199,27 @@ void WaikoEstimator::update_estimate(
   estimate_.position_correction_from_contact_positions = observer_.getPosCorrectionFromContactPos();
   estimate_.maintained_contacts_count = odometry_.maintainedContacts().size();
 
-  estimate_.contacts.clear();
+  // The entries are overwritten in place, so that the names are not reallocated at each update.
+  std::size_t count = 0;
   for (const auto & [name, contact] : odometry_.contactsManager().contacts())
   {
     if (!contact.isSet())
     {
       continue;
     }
-    estimate_.contacts.push_back(
-      {name, contact.lambda(), contact.bodyContactKine_.position(),
-       Eigen::Quaterniond(contact.bodyContactKine_.orientation.toMatrix3()),
-       contact.worldRefKine_.position(),
-       Eigen::Quaterniond(contact.worldRefKine_.orientation.toMatrix3())});
+    if (count == estimate_.contacts.size())
+    {
+      estimate_.contacts.emplace_back();
+    }
+    ContactState & state = estimate_.contacts[count++];
+    state.name = name;
+    state.lambda = contact.lambda();
+    state.imu_position = contact.bodyContactKine_.position();
+    state.imu_orientation = Eigen::Quaterniond(contact.bodyContactKine_.orientation.toMatrix3());
+    state.world_ref_position = contact.worldRefKine_.position();
+    state.world_ref_orientation = Eigen::Quaterniond(contact.worldRefKine_.orientation.toMatrix3());
   }
+  estimate_.contacts.resize(count);
 }
 
 }  // namespace waiko_ros2_control

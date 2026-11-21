@@ -78,7 +78,7 @@ private:
       tf2::fromMsg(contact_message.imu_contact_linear_velocity, contact.linear_velocity);
     }
 
-    estimator_->update(dt_, accelerometer, gyrometer, contacts_, message.reset_imu_loc_vel_hat);
+    estimator_->update(dt_, accelerometer, gyrometer, contacts_, message.reset_local_linear_velocity);
     publish_estimate(message.header.stamp);
   }
 
