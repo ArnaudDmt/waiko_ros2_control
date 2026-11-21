@@ -1,3 +1,4 @@
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -54,7 +55,7 @@ public:
 
     // The estimator answers the initial state with its initial estimate, which starts the replay.
     expected_stamp_ = initial_state_.header.stamp;
-    init_publisher_->publish(initial_state_);
+    init_timer_ = create_wall_timer(std::chrono::seconds(1), [this]() { offer_initial_state(); });
     RCLCPP_INFO(
       get_logger(), "Replaying '%s': initial state and %zu inputs.", bag_path.c_str(),
       inputs_.size());
@@ -91,12 +92,25 @@ private:
     initial_state_ = *initial_state;
   }
 
+  /// Called each period until the estimator answers. Waits for the estimator to subscribe to the
+  /// inputs, so that the first one is not lost, then publishes the initial state. It is sent again
+  /// while unanswered because an answer published before the estimator discovered this node is lost;
+  /// receiving it again only rebuilds the estimator identically.
+  void offer_initial_state()
+  {
+    if (input_publisher_->get_subscription_count() > 0)
+    {
+      init_publisher_->publish(initial_state_);
+    }
+  }
+
   void on_state(const msg::WaikoState & state)
   {
     if (state.header.stamp != expected_stamp_)
     {
       return;
     }
+    init_timer_->cancel();
     if (next_input_ == inputs_.size())
     {
       RCLCPP_INFO(get_logger(), "Replay finished.");
@@ -118,6 +132,7 @@ private:
   rclcpp::Publisher<msg::WaikoInitialState>::SharedPtr init_publisher_;
   rclcpp::Publisher<msg::WaikoInput>::SharedPtr input_publisher_;
   rclcpp::Subscription<msg::WaikoState>::SharedPtr state_subscription_;
+  rclcpp::TimerBase::SharedPtr init_timer_;
 };
 
 }  // namespace waiko_ros2_control
