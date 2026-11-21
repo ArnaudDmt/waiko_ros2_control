@@ -2,13 +2,13 @@ waiko_estimator:
   initial_gains:
     alpha:
       type: double
-      default_value: 4.0
+      default_value: 5.0
       description: "Correction of the local linear velocity x1 by the kinematic velocity measurement. Used before gain_switch_time."
       validation:
         gt_eq<>: [0.0]
     beta:
       type: double
-      default_value: 4.0
+      default_value: 2.0
       description: "Correction of the tilt x2 by the kinematic velocity measurement. Used before gain_switch_time."
       validation:
         gt_eq<>: [0.0]
@@ -39,13 +39,13 @@ waiko_estimator:
   final_gains:
     alpha:
       type: double
-      default_value: 4.0
+      default_value: 5.0
       description: "Correction of the local linear velocity x1 by the kinematic velocity measurement. Used after gain_switch_time."
       validation:
         gt_eq<>: [0.0]
     beta:
       type: double
-      default_value: 4.0
+      default_value: 2.0
       description: "Correction of the tilt x2 by the kinematic velocity measurement. Used after gain_switch_time."
       validation:
         gt_eq<>: [0.0]
@@ -113,8 +113,8 @@ waiko_estimator:
         gt_eq<>: [0.0]
     lambda_inf:
       type: double
-      default_value: 0.001
-      description: "Asymptotic weight of the contact reference correction."
+      default_value: 0.03
+      description: "Asymptotic weight of the contact reference correction. It is applied at each update, so its effect depends on the sampling rate."
       validation:
         bounds<>: [0.0, 1.0]
   reset_position_anchor_on_contact_change:

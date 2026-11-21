@@ -15,4 +15,3 @@ waiko_controller:
     imu_frame_id: imu_link
     initial_imu_position: [0.0, 0.0, 0.0]
     initial_imu_orientation: [0.0, 0.0, 0.0, 1.0]
-    reset_position_anchor_on_contact_change: true
