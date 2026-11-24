@@ -8,7 +8,6 @@
 #include "waiko_ros2_control/msg/waiko_initial_state.hpp"
 #include "waiko_ros2_control/msg/waiko_input.hpp"
 #include "waiko_ros2_control/msg/waiko_state.hpp"
-#include "waiko_ros2_control/waiko_conversions.hpp"
 #include "waiko_ros2_control/waiko_estimator.hpp"
 
 namespace waiko_ros2_control
@@ -45,7 +44,7 @@ private:
     tf2::fromMsg(message.position, position);
 
     estimator_.emplace(
-      make_configuration(parameters_->get_params()), local_linear_velocity, tilt, orientation,
+      parameters_->get_params(), local_linear_velocity, tilt, orientation,
       position);
     RCLCPP_INFO(get_logger(), "WAIKO initialized.");
 

@@ -17,12 +17,6 @@ constexpr double kTolerance = 1e-9;
 /// Norm of the difference, which unlike isApprox() is meaningful for vectors close to zero.
 double distance(const Eigen::Vector3d & a, const Eigen::Vector3d & b) { return (a - b).norm(); }
 
-WaikoConfiguration make_test_configuration(bool reset_position_anchor)
-{
-  const WaikoGains gains{4.0, 4.0, 1.0, 2.0, 1.0, 0.3};
-  return {gains, gains, 1.0, 30.0, 0.0, true, true, true, 10.0, 0.001, reset_position_anchor};
-}
-
 /// Robot standing still: identity orientation, IMU 1 m above the world origin, contacts on the
 /// ground below it.
 class StandingRobot : public ::testing::Test
@@ -42,8 +36,10 @@ protected:
 
   WaikoEstimator make_estimator(bool reset_position_anchor)
   {
+    waiko_estimator::Params params;
+    params.reset_position_anchor_on_contact_change = reset_position_anchor;
     return WaikoEstimator(
-      make_test_configuration(reset_position_anchor), Eigen::Vector3d::Zero(),
+      params, Eigen::Vector3d::Zero(),
       Eigen::Vector3d::UnitZ(), Eigen::Quaterniond::Identity(), imu_position_);
   }
 

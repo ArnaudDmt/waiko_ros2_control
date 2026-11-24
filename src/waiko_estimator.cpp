@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include <tf2_eigen/tf2_eigen.hpp>
+
 namespace waiko_ros2_control
 {
 
@@ -10,16 +12,15 @@ using LoContact = so::odometry::LoContact;
 using LeggedOdometryManager = so::odometry::LeggedOdometryManager;
 
 WaikoEstimator::WaikoEstimator(
-  const WaikoConfiguration & configuration, const Eigen::Vector3d & local_linear_velocity,
+  const waiko_estimator::Params & params, const Eigen::Vector3d & local_linear_velocity,
   const Eigen::Vector3d & tilt, const Eigen::Quaterniond & world_imu_orientation,
   const Eigen::Vector3d & world_imu_position)
-: configuration_(configuration),
+: params_(params),
   observer_(
-    configuration.initial_gains.alpha, configuration.initial_gains.beta,
-    configuration.initial_gains.gamma, configuration.initial_gains.rho,
-    configuration.initial_gains.mu, configuration.initial_gains.psi)
+    params.initial_gains.alpha, params.initial_gains.beta, params.initial_gains.gamma,
+    params.initial_gains.rho, params.initial_gains.mu, params.initial_gains.psi)
 {
-  observer_.setWithOriCorrectFromContactPos(configuration_.with_ori_correct_from_contact_pos);
+  observer_.setWithOriCorrectFromContactPos(params_.with_ori_correct_from_contact_pos);
 
   // The local position is the IMU position in the frame of the IMU orientation centred on the anchor,
   // which is the world origin at the initialization: p_local = R^T p.
@@ -31,11 +32,11 @@ WaikoEstimator::WaikoEstimator(
   so::kine::Kinematics world_imu_pose;
   world_imu_pose.position = world_imu_position;
   world_imu_pose.orientation = R;
-  odometry_.kappa(configuration_.kappa);
-  odometry_.lambdaInf(configuration_.lambda_inf);
+  odometry_.kappa(params_.leg_odometry.kappa);
+  odometry_.lambdaInf(params_.leg_odometry.lambda_inf);
   odometry_.init(
     LeggedOdometryManager::Configuration(so::odometry::OdometryType::Odometry6d)
-      .correctContacts(configuration_.correct_contacts),
+      .correctContacts(params_.leg_odometry.correct_contacts),
     world_imu_pose.toVector(so::kine::Kinematics::Flags::pose));
 
   update_estimate(Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
@@ -76,7 +77,7 @@ void WaikoEstimator::update(
     // Orientation of the IMU given by the orientations of the contacts and their references.
     const so::kine::LocalKinematics world_imu_from_contacts =
       odometry_.getWorldBodyLocalKineFromAnchor();
-    if (configuration_.with_ori_correct_from_contact_ori && world_imu_from_contacts.orientation.isSet())
+    if (params_.with_ori_correct_from_contact_ori && world_imu_from_contacts.orientation.isSet())
     {
       observer_.addOriInput(world_imu_from_contacts.orientation.toMatrix3(), k);
     }
@@ -93,7 +94,7 @@ void WaikoEstimator::update(
       .attitudeMeasurement(world_imu_orientation)
       .positionMeas(world_imu_position));
 
-  if (configuration_.reset_position_anchor_on_contact_change && contacts_changed)
+  if (params_.reset_position_anchor_on_contact_change && contacts_changed)
   {
     reset_position_anchor_to_support();
   }
@@ -138,14 +139,24 @@ bool WaikoEstimator::update_contacts(const std::vector<ContactMeasurement> & con
 
 void WaikoEstimator::apply_gains(bool has_support)
 {
-  const WaikoGains & gains = time_ > configuration_.gain_switch_time ? configuration_.final_gains
-                                                                     : configuration_.initial_gains;
-  observer_.setAlpha(has_support ? gains.alpha : configuration_.no_contact_alpha);
-  observer_.setBeta(has_support ? gains.beta : configuration_.no_contact_beta);
-  observer_.setGamma(gains.gamma);
-  observer_.setRho(gains.rho);
-  observer_.setMu(gains.mu);
-  observer_.setPsi(gains.psi);
+  // The two gain groups are distinct generated types with the same fields.
+  auto set_gains = [this, has_support](const auto & gains)
+  {
+    observer_.setAlpha(has_support ? gains.alpha : params_.no_contact_gains.alpha);
+    observer_.setBeta(has_support ? gains.beta : params_.no_contact_gains.beta);
+    observer_.setGamma(gains.gamma);
+    observer_.setRho(gains.rho);
+    observer_.setMu(gains.mu);
+    observer_.setPsi(gains.psi);
+  };
+  if (time_ > params_.gain_switch_time)
+  {
+    set_gains(params_.final_gains);
+  }
+  else
+  {
+    set_gains(params_.initial_gains);
+  }
 }
 
 // World frame of the position and position anchor
@@ -220,6 +231,36 @@ void WaikoEstimator::update_estimate(
     state.world_ref_orientation = Eigen::Quaterniond(contact.worldRefKine_.orientation.toMatrix3());
   }
   estimate_.contacts.resize(count);
+}
+
+void to_message(const WaikoEstimate & estimate, msg::WaikoState & message)
+{
+  message.maintained_contacts_count = static_cast<uint32_t>(estimate.maintained_contacts_count);
+  tf2::toMsg(estimate.kinematic_velocity, message.computed_yv);
+  tf2::toMsg(estimate.local_linear_velocity, message.x1);
+  tf2::toMsg(estimate.tilt, message.x2);
+  message.orientation = tf2::toMsg(estimate.orientation);
+  message.position = tf2::toMsg(estimate.position);
+  message.position_anchor = tf2::toMsg(estimate.position_anchor);
+  tf2::toMsg(estimate.angular_velocity, message.angular_velocity);
+  tf2::toMsg(
+    estimate.orientation_correction_from_contact_orientations,
+    message.orientation_correction_from_meas);
+  tf2::toMsg(
+    estimate.position_correction_from_contact_positions, message.position_correction_from_meas);
+
+  message.contacts.resize(estimate.contacts.size());
+  for (std::size_t i = 0; i < estimate.contacts.size(); ++i)
+  {
+    const ContactState & contact = estimate.contacts[i];
+    msg::WaikoContactState & contact_message = message.contacts[i];
+    contact_message.name = contact.name;
+    contact_message.contact_lambda = contact.lambda;
+    contact_message.world_ref_position = tf2::toMsg(contact.world_ref_position);
+    contact_message.world_ref_orientation = tf2::toMsg(contact.world_ref_orientation);
+    contact_message.imu_contact_position = tf2::toMsg(contact.imu_position);
+    contact_message.imu_contact_orientation = tf2::toMsg(contact.imu_orientation);
+  }
 }
 
 }  // namespace waiko_ros2_control

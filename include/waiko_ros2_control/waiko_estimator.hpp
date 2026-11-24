@@ -11,50 +11,11 @@
 #include <state-observation/observer/waiko-humanoid.hpp>
 #include <state-observation/tools/odometry/legged-odometry-manager.hpp>
 
+#include "waiko_ros2_control/msg/waiko_state.hpp"
+#include "waiko_ros2_control/waiko_estimator_parameters.hpp"
+
 namespace waiko_ros2_control
 {
-
-/// Gains of stateObservation::WaikoHumanoid.
-struct WaikoGains
-{
-  /// Correction of the local linear velocity x1 by the kinematic velocity measurement yv.
-  double alpha;
-  /// Correction of the tilt x2 by the kinematic velocity measurement yv.
-  double beta;
-  /// Convergence of the tilt of the orientation towards x2.
-  double gamma;
-  /// Correction of the position by the contact positions.
-  double rho;
-  /// Correction of the yaw by the contact orientations.
-  double mu;
-  /// Correction of the yaw by the contact positions.
-  double psi;
-};
-
-/// Configuration of WaikoEstimator.
-struct WaikoConfiguration
-{
-  /// Gains used from the initialization until gain_switch_time.
-  WaikoGains initial_gains;
-  /// Gains used after gain_switch_time.
-  WaikoGains final_gains;
-  /// Time after the initialization (s) from which final_gains are used.
-  double gain_switch_time;
-  /// alpha and beta used when no contact is set: yv is then zero and only weakly trusted.
-  double no_contact_alpha;
-  double no_contact_beta;
-  /// Corrects the yaw with the orientation of the IMU given by the contact orientations.
-  bool with_ori_correct_from_contact_ori;
-  /// Corrects the yaw with the contact positions (gain psi).
-  bool with_ori_correct_from_contact_pos;
-  /// Slowly corrects the world references of the contacts towards their current estimate.
-  bool correct_contacts;
-  /// Decay rate and asymptotic weight of that contact reference correction.
-  double kappa;
-  double lambda_inf;
-  /// Moves the position anchor to the support each time the set of contacts changes.
-  bool reset_position_anchor_on_contact_change;
-};
 
 /// Measurement of one contact, given by the robot. Kinematics are expressed in the IMU frame.
 struct ContactMeasurement
@@ -120,11 +81,12 @@ class WaikoEstimator
 public:
   /// Builds the observer at its initial state, with no contact set. The initial position anchor is the
   /// world origin.
+  /// @param params Gains and options, see src/waiko_estimator_parameters.yaml.
   /// @param local_linear_velocity Initial x1.
   /// @param tilt Initial x2, usually R^T e_z.
   /// @param world_imu_orientation, world_imu_position Initial pose of the IMU in the world.
   WaikoEstimator(
-    const WaikoConfiguration & configuration, const Eigen::Vector3d & local_linear_velocity,
+    const waiko_estimator::Params & params, const Eigen::Vector3d & local_linear_velocity,
     const Eigen::Vector3d & tilt, const Eigen::Quaterniond & world_imu_orientation,
     const Eigen::Vector3d & world_imu_position);
 
@@ -152,7 +114,7 @@ private:
   /// Fills estimate_ from the state of the observer and of the leg odometry.
   void update_estimate(const Eigen::Vector3d & angular_velocity, const Eigen::Vector3d & kinematic_velocity);
 
-  WaikoConfiguration configuration_;
+  waiko_estimator::Params params_;
   stateObservation::WaikoHumanoid observer_;
   stateObservation::odometry::LeggedOdometryManager odometry_;
   /// Time since the construction, accumulated over the updates (s).
@@ -160,6 +122,9 @@ private:
   std::set<std::string> active_contacts_;
   WaikoEstimate estimate_;
 };
+
+/// Fills every field of the state message but its header.
+void to_message(const WaikoEstimate & estimate, msg::WaikoState & message);
 
 }  // namespace waiko_ros2_control
 

@@ -38,10 +38,9 @@ rosidl_get_typesupport_target(waiko_msgs_target ${PROJECT_NAME} rosidl_typesuppo
 generate_parameter_library(waiko_estimator_parameters src/waiko_estimator_parameters.yaml)
 generate_parameter_library(waiko_controller_parameters src/waiko_controller_parameters.yaml)
 
-# WAIKO with the leg odometry, and its conversions from and to ROS parameters and messages.
+# WAIKO with the leg odometry, shared by the controller and the node.
 add_library(waiko_estimator SHARED
   src/waiko_estimator.cpp
-  src/waiko_conversions.cpp
 )
 target_include_directories(waiko_estimator PUBLIC include)
 target_link_libraries(waiko_estimator PUBLIC

@@ -7,7 +7,6 @@
 #include <pluginlib/class_list_macros.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
-#include "waiko_ros2_control/waiko_conversions.hpp"
 
 namespace waiko_ros2_control
 {
@@ -110,7 +109,7 @@ controller_interface::CallbackReturn WaikoController::on_activate(
     Eigen::Quaterniond(parameters_.initial_imu_orientation.data()).normalized();  // [x, y, z, w]
   const Eigen::Vector3d tilt = orientation.toRotationMatrix().transpose() * Eigen::Vector3d::UnitZ();
   estimator_.emplace(
-    make_configuration(estimator_parameter_listener_->get_params()), Eigen::Vector3d::Zero(), tilt,
+    estimator_parameter_listener_->get_params(), Eigen::Vector3d::Zero(), tilt,
     orientation, position);
 
   return controller_interface::CallbackReturn::SUCCESS;
