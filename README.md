@@ -38,7 +38,8 @@ Published topics:
 - `~/odometry` (`nav_msgs/Odometry`): pose of the IMU in `world_frame_id`, twist in `imu_frame_id`;
 - `~/estimated_state` (`waiko_ros2_control/WaikoState`): full state of the estimator.
 
-The estimator starts from `initial_imu_position` and `initial_imu_orientation` at each activation.
+The estimator starts from `initial_imu_position`, `initial_imu_linear_velocity` and
+`initial_imu_orientation` at each activation.
 See `config/waiko_controller.yaml` for an example, and `src/waiko_controller_parameters.yaml` and
 `src/waiko_estimator_parameters.yaml` for all the parameters.
 

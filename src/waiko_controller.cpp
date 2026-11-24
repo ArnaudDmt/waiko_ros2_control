@@ -105,12 +105,12 @@ controller_interface::CallbackReturn WaikoController::on_activate(
   }
 
   const Eigen::Vector3d position(parameters_.initial_imu_position.data());
+  const Eigen::Vector3d linear_velocity(parameters_.initial_imu_linear_velocity.data());
   const Eigen::Quaterniond orientation =
     Eigen::Quaterniond(parameters_.initial_imu_orientation.data()).normalized();  // [x, y, z, w]
   const Eigen::Vector3d tilt = orientation.toRotationMatrix().transpose() * Eigen::Vector3d::UnitZ();
   estimator_.emplace(
-    estimator_parameter_listener_->get_params(), Eigen::Vector3d::Zero(), tilt,
-    orientation, position);
+    estimator_parameter_listener_->get_params(), linear_velocity, tilt, orientation, position);
 
   return controller_interface::CallbackReturn::SUCCESS;
 }

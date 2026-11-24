@@ -31,6 +31,12 @@ waiko_controller:
     description: "Position of the IMU in the world when the controller is activated."
     validation:
       fixed_size<>: [3]
+  initial_imu_linear_velocity:
+    type: double_array
+    default_value: [0.0, 0.0, 0.0]
+    description: "Linear velocity of the IMU in the world, expressed in the IMU frame, when the controller is activated."
+    validation:
+      fixed_size<>: [3]
   initial_imu_orientation:
     type: double_array
     default_value: [0.0, 0.0, 0.0, 1.0]
