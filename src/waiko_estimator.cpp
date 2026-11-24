@@ -22,8 +22,8 @@ WaikoEstimator::WaikoEstimator(
 {
   observer_.setWithOriCorrectFromContactPos(params_.with_ori_correct_from_contact_pos);
 
-  // The local position is the IMU position in the frame of the IMU orientation centred on the anchor,
-  // which is the world origin at the initialization: p_local = R^T p.
+  // The local position is the IMU position in a frame with the axes of the IMU and the anchor as
+  // origin. The anchor is the world origin at the initialization, so p_local = R^T p.
   const Eigen::Matrix3d R = world_imu_orientation.toRotationMatrix();
   observer_.initEstimator(
     local_linear_velocity, tilt, Eigen::Vector4d(world_imu_orientation.coeffs()),

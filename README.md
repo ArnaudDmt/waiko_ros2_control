@@ -58,12 +58,12 @@ ros2 launch waiko_ros2_control waiko_replay.launch.py input_bag:=<input bag> out
 
 ## Position anchor
 
-WAIKO estimates the IMU position in a frame with the IMU orientation, centred on a point of the world
-called the position anchor: `position = position_anchor + R p_local`. Orientation corrections act on
-the position through the lever arm `p_local`. With `reset_position_anchor_on_contact_change`, the
-anchor is moved to the centroid of the contact references each time the contacts change, which keeps
-that lever arm short; the estimated world state is unchanged by the reset
-(`WaikoEstimator::reset_position_anchor_to_support`).
+WAIKO estimates the IMU position `p_local` in a frame whose axes are those of the IMU and whose
+origin is a point of the world, the position anchor: `position = position_anchor + R p_local`.
+Orientation corrections act on the position through the lever arm `p_local`. With
+`reset_position_anchor_on_contact_change`, the anchor is moved to the centroid of the contact
+references each time the contacts change, which keeps that lever arm short; the estimated world state
+is unchanged by the reset (`WaikoEstimator::reset_position_anchor_to_support`).
 
 ## Build
 
