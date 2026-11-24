@@ -2,7 +2,7 @@ waiko_estimator:
   initial_gains:
     alpha:
       type: double
-      default_value: 5.0
+      default_value: 4.0
       description: "Correction of the local linear velocity x1 by the kinematic velocity measurement. Used before gain_switch_time."
       validation:
         gt_eq<>: [0.0]
@@ -39,7 +39,7 @@ waiko_estimator:
   final_gains:
     alpha:
       type: double
-      default_value: 5.0
+      default_value: 4.0
       description: "Correction of the local linear velocity x1 by the kinematic velocity measurement. Used after gain_switch_time."
       validation:
         gt_eq<>: [0.0]
